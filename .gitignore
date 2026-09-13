@@ -1,0 +1,16 @@
+# Local caches and notebook autosaves
+online_job_cache/
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+# Local secrets and environment files
+.env
+.env.*
+*.key
+*.pem
+
+# Diagnostic images are not needed by the published dashboard
+geometry_final_check.png
+map_visual_check.png
+
