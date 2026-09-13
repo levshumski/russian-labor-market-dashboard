@@ -165,7 +165,14 @@ def inject_online_mode(map_file: Path | str) -> None:
     switch = '<div class="data-mode-switch" role="group" aria-label="Источник данных"><button id="mode-official" class="active" aria-pressed="true">Официальная статистика Росстата</button><button id="mode-online" aria-pressed="false">Онлайн-сервисы вакансий</button></div><main class="official-dashboard">'
     html = html[:subtitle_end] + switch + html[subtitle_end:]
     body_script = html.rfind("<script>")
-    html = html[:body_script] + "</main>" + ONLINE_HTML + html[body_script:]
+    # Keep both dashboards inside the same outer .shell container. The original
+    # closing </main> belongs to .shell; first close .official-dashboard, insert
+    # the online dashboard, and only then retain the outer closing tag.
+    prefix = html[:body_script]
+    shell_close = prefix.rfind("</main>")
+    if shell_close < 0:
+        raise RuntimeError("Не найден закрывающий тег основного контейнера .shell")
+    html = prefix[:shell_close] + "</main>" + ONLINE_HTML + prefix[shell_close:] + html[body_script:]
     js = ONLINE_JS.replace("__ONLINE_DATA__", json.dumps(data, ensure_ascii=False, separators=(",", ":"))).replace("__ONLINE_STATUS__", json.dumps(status, ensure_ascii=False, separators=(",", ":")))
     html = html.replace("</body>", js + "\n</body>")
     map_file.write_text(html, encoding="utf-8")
