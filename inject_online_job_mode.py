@@ -21,6 +21,11 @@ def percentile(series: pd.Series, ascending: bool = True) -> pd.Series:
     return series.rank(pct=True, method="average", ascending=ascending).fillna(0.5)
 
 
+def safe_int(value, default: int = 0) -> int:
+    """Convert numeric CSV values without failing on an empty regional sample."""
+    return default if pd.isna(value) else int(round(float(value)))
+
+
 def prepare_online_data():
     online = pd.read_csv(REGIONAL, encoding="utf-8-sig")
     groups = pd.read_csv(GROUPS, encoding="utf-8-sig")
@@ -76,8 +81,8 @@ def prepare_online_data():
             "region": row.region,
             "score": float(row.online_difficulty_score),
             "reported_total": int(row.reported_total),
-            "sample": int(row.sample_vacancies),
-            "salary_n": int(row.salary_observations),
+            "sample": safe_int(row.sample_vacancies),
+            "salary_n": safe_int(row.salary_observations),
             "median_salary": None if pd.isna(row.median_salary_offer_rur) else int(round(row.median_salary_offer_rur)),
             "q25": None if pd.isna(row.salary_q25_rur) else int(round(row.salary_q25_rur)),
             "q75": None if pd.isna(row.salary_q75_rur) else int(round(row.salary_q75_rur)),
